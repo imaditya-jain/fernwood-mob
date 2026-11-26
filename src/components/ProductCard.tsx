@@ -1,13 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { Text } from "@/components/Text";
+import { useCart } from "@/features/cart/CartProvider";
 import { formatPrice } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { colors, radius, shadow } from "@/theme/tokens";
 
 export function ProductCard({ product, width }: { product: Product; width?: number }) {
+  const { add, busy } = useCart();
   return (
     <Link href={{ pathname: "/product/[handle]", params: { handle: product.slug } }} asChild>
       <Pressable
@@ -29,6 +32,17 @@ export function ProductCard({ product, width }: { product: Product; width?: numb
                 {product.badge.toUpperCase()}
               </Text>
             </View>
+          ) : null}
+          {product.inStock && product.variantId ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Add to cart: ${product.name}`}
+              disabled={busy}
+              onPress={() => void add(product.variantId as string)}
+              style={[styles.quickAdd, busy && { opacity: 0.6 }]}
+            >
+              <Ionicons name="add" size={22} color={colors.cream} />
+            </Pressable>
           ) : null}
           {!product.inStock ? (
             <View style={styles.soldOut}>
@@ -76,6 +90,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   badgeText: { color: colors.cream, fontSize: 10, letterSpacing: 1.2 },
+  quickAdd: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.forest,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadow.card,
+  },
   soldOut: {
     position: "absolute",
     right: 10,

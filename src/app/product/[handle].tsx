@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,6 +10,7 @@ import { Button } from "@/components/Button";
 import { ErrorState, Loading } from "@/components/QueryState";
 import { Text } from "@/components/Text";
 import { formatPrice } from "@/lib/format";
+import { useCart } from "@/features/cart/CartProvider";
 import { useProduct } from "@/lib/shopify/hooks";
 import { colors, radius, shadow } from "@/theme/tokens";
 
@@ -17,6 +19,8 @@ export default function ProductScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: product, isPending, isError, refetch } = useProduct(handle);
+  const { add, busy, error } = useCart();
+  const [failed, setFailed] = useState(false);
 
   if (isPending) return <Loading />;
   if (isError) return <ErrorState onRetry={() => void refetch()} />;
@@ -85,7 +89,22 @@ export default function ProductScreen() {
         </Animated.View>
       </ScrollView>
       <View style={[styles.bar, { paddingBottom: insets.bottom + 12 }]}>
-        <Button label={product.inStock ? "Add to cart" : "Sold out"} disabled={!product.inStock} />
+        {failed && error ? (
+          <Text accessibilityRole="alert" variant="small" style={{ color: colors.danger, marginBottom: 8 }}>
+            {error}
+          </Text>
+        ) : null}
+        <Button
+          label={product.inStock ? `Add to cart: ${product.name}` : "Sold out"}
+          disabled={!product.inStock || !product.variantId}
+          loading={busy}
+          onPress={async () => {
+            if (!product.variantId) return;
+            const added = await add(product.variantId);
+            setFailed(!added);
+            if (added) router.navigate("/cart");
+          }}
+        />
       </View>
     </View>
   );

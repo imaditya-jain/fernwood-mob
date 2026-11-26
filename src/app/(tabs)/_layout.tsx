@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { type ColorValue, Platform } from "react-native";
 
+import { useCart } from "@/features/cart/CartProvider";
 import { colors, fonts } from "@/theme/tokens";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -14,6 +15,8 @@ const tab = (title: string, icon: IconName, focused: IconName) => ({
 });
 
 export default function TabsLayout() {
+  const { cart } = useCart();
+  const count = cart?.totalQuantity ?? 0;
   return (
     <Tabs
       screenOptions={{
@@ -31,6 +34,14 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={tab("Home", "leaf-outline", "leaf")} />
       <Tabs.Screen name="shop" options={tab("Shop", "storefront-outline", "storefront")} />
+      <Tabs.Screen
+        name="cart"
+        options={{
+          ...tab("Cart", "bag-outline", "bag"),
+          ...(count > 0 ? { tabBarBadge: count } : {}),
+          tabBarBadgeStyle: { backgroundColor: colors.clay, color: colors.cream, fontFamily: fonts.bodySemibold },
+        }}
+      />
       <Tabs.Screen name="wishlist" options={tab("Wishlist", "heart-outline", "heart")} />
       <Tabs.Screen name="account" options={tab("Account", "person-outline", "person")} />
     </Tabs>

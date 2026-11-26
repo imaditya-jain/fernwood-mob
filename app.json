@@ -26,7 +26,8 @@
       "expo-secure-store",
       "expo-font",
       "expo-splash-screen",
-      "expo-image"
+      "expo-image",
+      "expo-web-browser"
     ],
     "scheme": "fernwood",
     "experiments": {

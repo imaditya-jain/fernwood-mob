@@ -15,6 +15,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { CartProvider } from "@/features/cart/CartProvider";
 import { colors } from "@/theme/tokens";
 
 void SplashScreen.preventAutoHideAsync();
@@ -39,6 +40,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.cream }}>
       <QueryClientProvider client={queryClient}>
+      <CartProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -50,6 +52,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="product/[handle]" />
       </Stack>
+      </CartProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
