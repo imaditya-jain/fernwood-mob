@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -9,9 +10,14 @@ import { Button } from "@/components/Button";
 import { ProductCard } from "@/components/ProductCard";
 import { Text } from "@/components/Text";
 import { useBestSellers, useCollections } from "@/lib/shopify/hooks";
-import { colors, radius, shadow } from "@/theme/tokens";
+import { colors, fonts, radius, shadow } from "@/theme/tokens";
 
 const CARD_W = 220;
+const SERVICES = [
+  { href: "/gifts", icon: "flower-outline", eyebrow: "Nagpur", title: "Gifts & bouquets", text: "Fresh flowers delivered on the day you choose.", color: colors.clayDeep, tint: "#f4e1d6" },
+  { href: "/gardener", icon: "leaf-outline", eyebrow: "Services", title: "Gardener visits", text: "One-time, monthly, fortnightly or weekly plans.", color: colors.forest, tint: colors.sageLight },
+  { href: "/wholesale", icon: "storefront-outline", eyebrow: "Trade", title: "Wholesale", text: "Apply for a trade account for your business.", color: colors.forestDeep, tint: colors.sand },
+] as const;
 const HERO = "https://fernwood-ruby.vercel.app/images/hero-plants.jpg";
 
 export default function HomeScreen() {
@@ -119,34 +125,49 @@ export default function HomeScreen() {
       ) : null}
 
       <Animated.View entering={FadeInDown.delay(250).duration(600)} style={styles.services}>
-        <Pressable accessibilityRole="button" onPress={() => router.push("/doctor")} style={[styles.service, { backgroundColor: colors.forestDeep }]}>
-          <Text variant="eyebrow" style={{ color: colors.sage }}>New</Text>
-          <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Plant Doctor</Text>
-          <Text variant="small" style={{ color: colors.cream, opacity: 0.8, marginTop: 4 }}>Photograph a plant and get a care plan.</Text>
+        <Text variant="eyebrow" style={{ color: colors.clay }}>More from Fernwood</Text>
+        <Text variant="title" style={{ marginBottom: 4 }}>Care, gifts and trade</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Plant Doctor" onPress={() => router.push("/doctor")} style={({ pressed }) => [styles.feature, pressed && { opacity: 0.92, transform: [{ scale: 0.99 }] }]}>
+          <LinearGradient colors={[colors.forestDeep, colors.forest]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <Ionicons name="leaf" size={180} color={colors.cream} style={styles.watermark} />
+          <View style={styles.pill}>
+            <Text variant="eyebrow" style={{ color: colors.cream, fontSize: 10 }}>New · AI</Text>
+          </View>
+          <Text variant="title" style={{ color: colors.cream, marginTop: 14 }}>Plant Doctor</Text>
+          <Text variant="small" style={{ color: colors.cream, opacity: 0.82, marginTop: 6, maxWidth: "75%" }}>
+            Photograph a struggling plant and get a clear, step-by-step care plan.
+          </Text>
+          <View style={styles.cta}>
+            <Text variant="small" style={{ color: colors.forestDeep, fontFamily: fonts.bodySemibold }}>Check a plant</Text>
+            <Ionicons name="arrow-forward" size={15} color={colors.forestDeep} />
+          </View>
         </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => router.push("/gifts")} style={[styles.service, { backgroundColor: colors.clay }]}>
-          <Text variant="eyebrow" style={{ color: colors.cream }}>Nagpur</Text>
-          <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Gifts & bouquets</Text>
-          <Text variant="small" style={{ color: colors.cream, opacity: 0.9, marginTop: 4 }}>Fresh flowers delivered on the day you choose.</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => router.push("/gardener")} style={[styles.service, { backgroundColor: colors.forest }]}>
-          <Text variant="eyebrow" style={{ color: colors.sage }}>Services</Text>
-          <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Gardener visits</Text>
-          <Text variant="small" style={{ color: colors.cream, opacity: 0.8, marginTop: 4 }}>One-time or monthly, fortnightly and weekly plans.</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => router.push("/wholesale")} style={[styles.service, { backgroundColor: colors.sand }]}>
-          <Text variant="eyebrow">Trade</Text>
-          <Text variant="title" style={{ marginTop: 4 }}>Wholesale</Text>
-          <Text variant="small" style={{ marginTop: 4 }}>Apply for a trade account for your business.</Text>
-        </Pressable>
+        {SERVICES.map((item) => (
+          <Pressable key={item.href} accessibilityRole="button" accessibilityLabel={item.title} onPress={() => router.push(item.href)} style={({ pressed }) => [styles.row, pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] }]}>
+            <View style={[styles.badge, { backgroundColor: item.tint }]}>
+              <Ionicons name={item.icon} size={22} color={item.color} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text variant="eyebrow" style={{ color: item.color, fontSize: 10 }}>{item.eyebrow}</Text>
+              <Text variant="title" style={{ fontSize: 19, marginTop: 1 }}>{item.title}</Text>
+              <Text variant="small" style={{ marginTop: 2 }}>{item.text}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+          </Pressable>
+        ))}
       </Animated.View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  services: { paddingHorizontal: 20, gap: 14, marginTop: 28 },
-  service: { borderRadius: radius.xl, padding: 20, ...shadow.card },
+  services: { paddingHorizontal: 20, gap: 12, marginTop: 36 },
+  feature: { borderRadius: radius.xl, padding: 22, overflow: "hidden", ...shadow.card },
+  watermark: { position: "absolute", right: -30, bottom: -40, opacity: 0.07 },
+  pill: { alignSelf: "flex-start", borderWidth: 1, borderColor: "rgba(246,239,226,0.35)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  cta: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.cream, borderRadius: 999, paddingHorizontal: 16, minHeight: 40, marginTop: 18 },
+  row: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: colors.card, borderRadius: radius.xl, padding: 16, borderWidth: 1, borderColor: colors.border, ...shadow.card },
+  badge: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
   sectionEyebrow: { paddingHorizontal: 20 },
   sectionTitle: { paddingHorizontal: 20, marginBottom: 14 },
   collection: { height: 280, borderRadius: radius.lg, overflow: "hidden", justifyContent: "flex-end", backgroundColor: colors.sand },
