@@ -59,7 +59,7 @@ export default function HomeScreen() {
           A few quick questions, then swipe through plants and we show your best matches.
         </Text>
         <View style={{ marginTop: 16, alignSelf: "flex-start" }}>
-          <Button label="Find my plant" />
+          <Button label="Find my plant" onPress={() => router.push("/plant-finder")} />
         </View>
       </Animated.View>
 
