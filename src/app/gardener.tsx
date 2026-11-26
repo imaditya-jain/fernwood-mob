@@ -3,8 +3,18 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import Animated, {
+  FadeInDown,
+  interpolate,
+  LinearTransition,
+  type SharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/Button";
@@ -41,9 +51,88 @@ function options(service: GardenerService): Option[] {
   ];
 }
 
+
+const SITE = process.env.EXPO_PUBLIC_API_URL ?? "";
+const INCLUDED = ["Care for your plants at your address", "You choose the first visit date", "Charged per visit, not upfront"];
+const STEPS = [
+  { icon: "clipboard-outline", title: "Choose a plan", text: "One visit or a regular rhythm." },
+  { icon: "location-outline", title: "Tell us where", text: "Your address and the day that suits you." },
+  { icon: "leaf-outline", title: "We come to you", text: "A Fernwood gardener cares for your plants." },
+] as const;
+const QUESTIONS = [
+  { q: "Where do you offer the service?", a: "Currently in Nagpur, Pune and Mumbai." },
+  { q: "How am I charged?", a: "A one-time visit is paid at checkout. Plans are charged for each visit." },
+  { q: "Can I choose the day?", a: "Yes. You choose your preferred date when you book." },
+] as const;
+
+function PlanCard({ option, index, scrollX, width, selected, currency, onSelect }: {
+  option: Option; index: number; scrollX: SharedValue<number>; width: number; selected: boolean; currency: string; onSelect: () => void;
+}) {
+  const style = useAnimatedStyle(() => {
+    const input = [(index - 1) * (width + 14), index * (width + 14), (index + 1) * (width + 14)];
+    return { transform: [{ scale: interpolate(scrollX.value, input, [0.92, 1, 0.92], "clamp") }], opacity: interpolate(scrollX.value, input, [0.7, 1, 0.7], "clamp") };
+  });
+  const dark = option.popular;
+  const fg = dark ? colors.cream : colors.forest;
+  const sub = dark ? "rgba(250,243,229,0.78)" : colors.muted;
+  return (
+    <Animated.View style={[{ width }, style]}>
+      <Pressable
+        accessibilityRole="radio"
+        accessibilityState={{ selected }}
+        accessibilityLabel={`${option.label}, ${money(option.price, currency)} per visit`}
+        onPress={onSelect}
+        style={[styles.plan, dark && styles.planDark, selected && styles.planOn]}
+      >
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", minHeight: 26 }}>
+          {option.popular ? (
+            <View style={styles.popular}><Text variant="small" style={{ color: colors.cream, fontSize: 10, letterSpacing: 1.5 }}>MOST POPULAR</Text></View>
+          ) : <View />}
+          <Ionicons name={selected ? "checkmark-circle" : "ellipse-outline"} size={26} color={selected ? colors.clay : dark ? "rgba(250,243,229,0.5)" : colors.border} />
+        </View>
+        <Text variant="title" style={{ color: fg, fontSize: 22, marginTop: 6 }}>{option.label}</Text>
+        <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 10 }}>
+          <Text variant="display" style={{ fontSize: 44, lineHeight: 48, color: fg }}>{money(option.price, currency)}</Text>
+          <Text variant="small" style={{ color: sub }}>/ visit</Text>
+        </View>
+        <Text variant="small" style={{ color: sub, marginTop: 2 }}>{option.note}</Text>
+        <View style={[styles.save, { opacity: option.saving ? 1 : 0 }, dark && { backgroundColor: "rgba(250,243,229,0.15)" }]}>
+          <Text variant="small" style={{ color: fg, fontFamily: fonts.bodySemibold }}>{option.saving ?? "-"} per visit</Text>
+        </View>
+        <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: dark ? "rgba(250,243,229,0.25)" : colors.border, marginVertical: 14 }} />
+        {INCLUDED.map((item) => (
+          <View key={item} style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+            <Ionicons name="checkmark" size={16} color={dark ? colors.sage : colors.clay} style={{ marginTop: 2 }} />
+            <Text variant="small" style={{ flex: 1, color: dark ? colors.cream : colors.text }}>{item}</Text>
+          </View>
+        ))}
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+function Question({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Animated.View layout={LinearTransition.duration(220)} style={{ paddingVertical: 14 }}>
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }} onPress={() => setOpen((v) => !v)} style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <Text variant="title" style={{ flex: 1, fontSize: 17, lineHeight: 22 }}>{q}</Text>
+        <Ionicons name={open ? "remove-circle-outline" : "add-circle-outline"} size={24} color={colors.forest} />
+      </Pressable>
+      {open ? <Text variant="small" style={{ marginTop: 8 }}>{a}</Text> : null}
+    </Animated.View>
+  );
+}
+
 export default function GardenerScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = Math.round(screenWidth * 0.78);
+  const scrollX = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollX.value = event.contentOffset.x;
+  });
   const { add, busy, error } = useCart();
   const query = useQuery({ queryKey: ["gardener"], queryFn: fetchGardenerService, staleTime: 5 * 60 * 1000 });
   const [plan, setPlan] = useState(ONE_TIME);
@@ -77,8 +166,10 @@ export default function GardenerScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 120 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={[styles.hero, { paddingTop: insets.top + 12 }]}>
+          <Image source={{ uri: `${SITE}/images/promo-repotting.jpg` }} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
+          <LinearGradient colors={["rgba(26,44,22,0.78)", "rgba(26,44,22,0.62)", "rgba(26,44,22,0.95)"]} style={StyleSheet.absoluteFill} />
           <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back" hitSlop={12}>
             <Ionicons name="chevron-back" size={26} color={colors.cream} />
           </Pressable>
@@ -97,6 +188,18 @@ export default function GardenerScreen() {
           </View>
         </View>
 
+        <View style={styles.steps}>
+          {STEPS.map((step, index) => (
+            <View key={step.title} style={{ flex: 1, alignItems: "center", gap: 6 }}>
+              <View style={styles.stepIcon}>
+                <Ionicons name={step.icon} size={22} color={colors.cream} />
+              </View>
+              <Text variant="small" style={{ color: colors.clay, fontFamily: fonts.bodySemibold }}>Step {index + 1}</Text>
+              <Text variant="small" style={{ color: colors.forest, textAlign: "center", fontFamily: fonts.bodyMedium }}>{step.title}</Text>
+            </View>
+          ))}
+        </View>
+
         {query.isPending ? (
           <Loading />
         ) : query.isError ? (
@@ -110,38 +213,28 @@ export default function GardenerScreen() {
           </View>
         ) : (
           <Animated.View entering={FadeInDown.duration(400)} style={{ padding: 20, gap: 18 }}>
-            <Text variant="title">Choose your plan</Text>
-            <View style={{ gap: 14 }}>
-              {opts.map((option) => {
-                const selected = plan === option.value;
-                return (
-                  <Pressable
-                    key={option.value}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected }}
-                    onPress={() => setPlan(option.value)}
-                    style={[styles.plan, option.popular && styles.planDark, selected && styles.planOn]}
-                  >
-                    {option.popular ? (
-                      <View style={styles.popular}><Text variant="small" style={{ color: colors.cream, fontSize: 10, letterSpacing: 1.5 }}>MOST POPULAR</Text></View>
-                    ) : null}
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                      <Text variant="title" style={{ fontSize: 20, color: option.popular ? colors.cream : colors.forest }}>{option.label}</Text>
-                      <Ionicons name={selected ? "checkmark-circle" : "ellipse-outline"} size={24} color={selected ? colors.clay : option.popular ? colors.cream : colors.border} />
-                    </View>
-                    <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 8 }}>
-                      <Text variant="display" style={{ fontSize: 36, lineHeight: 40, color: option.popular ? colors.cream : colors.forest }}>{money(option.price, service.currency)}</Text>
-                      <Text variant="small" style={{ color: option.popular ? colors.cream : colors.muted, opacity: 0.8 }}>/ visit</Text>
-                    </View>
-                    <Text variant="small" style={{ color: option.popular ? colors.cream : colors.muted, opacity: 0.85, marginTop: 4 }}>{option.note}</Text>
-                    {option.saving ? (
-                      <View style={[styles.save, option.popular && { backgroundColor: "rgba(250,243,229,0.15)" }]}>
-                        <Text variant="small" style={{ color: option.popular ? colors.cream : colors.forest, fontFamily: fonts.bodySemibold }}>{option.saving} per visit</Text>
-                      </View>
-                    ) : null}
-                  </Pressable>
-                );
-              })}
+            <View style={{ marginHorizontal: -20 }}>
+              <Text variant="eyebrow" style={{ paddingHorizontal: 20 }}>Plans</Text>
+              <Text variant="title" style={{ paddingHorizontal: 20, fontSize: 26, marginBottom: 14 }}>Pick the rhythm that suits your plants</Text>
+              <Animated.FlatList
+                horizontal
+                data={opts}
+                keyExtractor={(option) => option.value}
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={cardWidth + 14}
+                decelerationRate="fast"
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                contentContainerStyle={{ paddingHorizontal: 20, gap: 14, paddingVertical: 8 }}
+                renderItem={({ item, index }) => (
+                  <PlanCard option={item} index={index} scrollX={scrollX} width={cardWidth} selected={plan === item.value} currency={service.currency} onSelect={() => setPlan(item.value)} />
+                )}
+              />
+              <View style={{ flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 6 }}>
+                {opts.map((option) => (
+                  <View key={option.value} style={{ width: plan === option.value ? 20 : 7, height: 7, borderRadius: 4, backgroundColor: plan === option.value ? colors.forest : colors.border }} />
+                ))}
+              </View>
             </View>
 
             <View style={styles.card}>
@@ -198,19 +291,38 @@ export default function GardenerScreen() {
               <Text variant="small" style={{ color: colors.cream, opacity: 0.65, marginTop: 8 }}>You pay at checkout. Nothing is charged until you complete it.</Text>
             </View>
             {error ? <Text variant="small" accessibilityRole="alert" style={{ color: colors.danger }}>{error}</Text> : null}
-            <Button label="Add booking to cart" loading={busy} onPress={() => void submit()} />
+
+            <View style={styles.card}>
+              <Text variant="title">Good to know</Text>
+              {QUESTIONS.map((item, index) => (
+                <View key={item.q} style={index > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border } : undefined}>
+                  <Question q={item.q} a={item.a} />
+                </View>
+              ))}
+            </View>
           </Animated.View>
         )}
       </ScrollView>
+      {service && chosen ? (
+        <View style={[styles.bar, { paddingBottom: insets.bottom + 12 }]}>
+          <View style={{ flex: 1 }}>
+            <Text variant="small" numberOfLines={1}>{chosen.label}</Text>
+            <Text variant="title" style={{ fontSize: 22 }}>{money(chosen.price, service.currency)} <Text variant="small">/ visit</Text></Text>
+          </View>
+          <View style={{ flex: 1.2 }}>
+            <Button label="Book now" loading={busy} onPress={() => void submit()} />
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: { backgroundColor: colors.forestDeep, padding: 24, paddingBottom: 32, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  hero: { backgroundColor: colors.forestDeep, padding: 24, paddingBottom: 36, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, overflow: "hidden" },
   cityChip: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "rgba(250,243,229,0.12)", borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
   card: { backgroundColor: colors.card, borderRadius: radius.xl, padding: 20, ...shadow.card },
-  plan: { backgroundColor: colors.card, borderRadius: radius.xl, padding: 20, borderWidth: 2, borderColor: "transparent", ...shadow.card },
+  plan: { backgroundColor: colors.card, borderRadius: radius.xl, padding: 20, borderWidth: 2, borderColor: "transparent", minHeight: 400, ...shadow.card },
   planDark: { backgroundColor: colors.forest },
   planOn: { borderColor: colors.clay },
   popular: { alignSelf: "flex-start", backgroundColor: colors.clay, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 10 },
@@ -218,5 +330,8 @@ const styles = StyleSheet.create({
   pill: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.card },
   pillOn: { backgroundColor: colors.forest, borderColor: colors.forest },
   dateBtn: { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 52, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, paddingHorizontal: 16 },
+  steps: { flexDirection: "row", gap: 8, paddingHorizontal: 20, paddingTop: 22 },
+  stepIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.forest, alignItems: "center", justifyContent: "center", ...shadow.card },
+  bar: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, paddingTop: 12, backgroundColor: colors.card, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, ...shadow.card },
   summary: { backgroundColor: colors.forestDeep, borderRadius: radius.xl, padding: 20 },
 });
