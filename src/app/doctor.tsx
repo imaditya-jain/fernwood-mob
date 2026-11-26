@@ -274,7 +274,8 @@ export default function DoctorScreen() {
 
   // A 404 means the shop has not been updated with the Plant Doctor yet: say so, instead of letting someone take a photo for nothing.
   const missing = history.error instanceof ApiError && history.error.status === 404;
-  const enabled = !missing && (history.data?.enabled ?? true);
+  // The form shows only when the shop confirms the feature is on; an unreachable or switched-off shop shows "coming soon".
+  const enabled = !missing && history.data?.enabled === true;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
@@ -286,7 +287,7 @@ export default function DoctorScreen() {
         <View style={{ width: 26 }} />
       </View>
       <KeyboardAwareScrollView bottomOffset={96} contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 18 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {status === "loading" ? (
+        {status === "loading" || (status === "authenticated" && history.isLoading) ? (
           <Loading />
         ) : status !== "authenticated" ? (
           <SignInPrompt icon="medkit-outline" title="Sign in to check your plant" text="The Plant Doctor looks at your photo and builds a care plan. A free account keeps your checks together." />
