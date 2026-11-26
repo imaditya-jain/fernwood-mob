@@ -57,10 +57,10 @@ export function ProductCard({ product, width }: { product: Product; width?: numb
           ) : null}
         </View>
         <View style={styles.info}>
-          <Text variant="small" style={{ textTransform: "uppercase", letterSpacing: 1 }}>
+          <Text variant="small" numberOfLines={1} style={{ textTransform: "uppercase", letterSpacing: 1 }}>
             {product.category}
           </Text>
-          <Text variant="title" numberOfLines={2} style={{ fontSize: 17, lineHeight: 22, marginTop: 2 }}>
+          <Text variant="title" numberOfLines={2} style={{ fontSize: 17, lineHeight: 22, marginTop: 2, minHeight: 44 }}>
             {product.name}
           </Text>
           <View style={styles.priceRow}>
@@ -80,9 +80,9 @@ export function ProductCard({ product, width }: { product: Product; width?: numb
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.card, borderRadius: radius.lg, overflow: "hidden", ...shadow.card },
+  card: { flex: 1, backgroundColor: colors.card, borderRadius: radius.lg, overflow: "hidden", ...shadow.card },
   image: { width: "100%", aspectRatio: 4 / 5, backgroundColor: colors.sand },
-  info: { padding: 12 },
+  info: { flex: 1, padding: 12, justifyContent: "space-between" },
   priceRow: { flexDirection: "row", alignItems: "baseline", gap: 8, marginTop: 6 },
   badge: {
     position: "absolute",

@@ -58,6 +58,8 @@ export default function RootLayout() {
         <Stack.Screen name="plant-finder" />
         <Stack.Screen name="gardener" />
         <Stack.Screen name="wholesale" />
+        <Stack.Screen name="contact" />
+        <Stack.Screen name="notifications" />
         <Stack.Screen name="orders/index" />
         <Stack.Screen name="orders/[id]" />
         <Stack.Screen name="auth/login" options={{ presentation: "modal" }} />

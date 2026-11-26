@@ -146,6 +146,12 @@ const lineInput = (variantId: string, quantity: number, extras?: LineExtras) => 
   };
 };
 
+/** Sets (or clears) the buyer email so checkout is pre-filled and the order lands in the account's history. */
+export const setBuyerEmail = (cartId: string, email: string | null) => {
+  assertGid(cartId);
+  return mutate(CART_BUYER, { cartId, email }, "cartBuyerIdentityUpdate");
+};
+
 export const createCart = (variantId: string, quantity = 1, extras?: LineExtras) =>
   mutate(
     CART_CREATE,

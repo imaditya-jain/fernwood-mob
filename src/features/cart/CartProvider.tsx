@@ -3,7 +3,8 @@ import * as SecureStore from "expo-secure-store";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { type Cart, MAX_CART_LINES } from "@/lib/cart";
-import { addLine, CartError, createCart, type LineExtras, fetchCart, removeLine, setLineQuantity } from "@/lib/shopify/cart";
+import { useAuth } from "@/features/auth/AuthProvider";
+import { addLine, CartError, createCart, type LineExtras, setBuyerEmail, fetchCart, removeLine, setLineQuantity } from "@/lib/shopify/cart";
 
 const KEY = "fw_cart_id";
 
@@ -42,6 +43,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const cartRef = useRef<Cart | null>(null);
   cartRef.current = cart;
+  const { status, user } = useAuth();
+  // One attempt per cart + account, so a failing request can never turn into a retry loop.
+  const linkAttempt = useRef<string | null>(null);
 
   const adopt = useCallback(async (next: Cart | null) => {
     setCart(next);
@@ -71,6 +75,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!cart || busy) return;
+    const key = `${status}:${user?.id ?? ""}:${cart.id}`;
+    if (linkAttempt.current === key) return;
+    if (status === "authenticated" && user) {
+      linkAttempt.current = key;
+      setBuyerEmail(cart.id, user.email).then(setCart).catch(() => undefined);
+    } else if (status === "anonymous" && linkAttempt.current?.startsWith("authenticated:")) {
+      // Signing out: stop pre-filling checkout with the previous account's email.
+      linkAttempt.current = key;
+      setBuyerEmail(cart.id, null).then(setCart).catch(() => undefined);
+    }
+  }, [cart, busy, status, user]);
 
   const run = useCallback(
     async (action: (current: Cart | null) => Promise<Cart | null>, retryWithoutCart?: () => Promise<Cart>) => {

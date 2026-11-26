@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import * as WebBrowser from "expo-web-browser";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -8,9 +9,21 @@ import { Button } from "@/components/Button";
 import { Loading } from "@/components/QueryState";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import { Text } from "@/components/Text";
+import { useUnreadCount } from "@/app/notifications";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ApiError, apiRequest } from "@/lib/api";
 import { colors, radius, shadow } from "@/theme/tokens";
+
+const SITE = process.env.EXPO_PUBLIC_API_URL ?? "";
+/** Reading pages stay on the website, so they are always the same as the site and never go out of date. */
+const HELP = [
+  { label: "Our story", path: "/about" },
+  { label: "Plant care guide", path: "/care-guide" },
+  { label: "Shipping & delivery", path: "/shipping-delivery" },
+  { label: "Plant guarantee", path: "/plant-guarantee" },
+  { label: "FAQ", path: "/faq" },
+  { label: "Journal", path: "/blog" },
+] as const;
 
 type Row = { icon: React.ComponentProps<typeof Ionicons>["name"]; label: string; onPress: () => void };
 
@@ -18,6 +31,7 @@ export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { status, user, logout, logoutEverywhere } = useAuth();
+  const unread = useUnreadCount().data ?? 0;
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -56,8 +70,11 @@ export default function AccountScreen() {
     { icon: "receipt-outline", label: "Your orders", onPress: () => router.push("/orders") },
     { icon: "heart-outline", label: "Your wishlist", onPress: () => router.navigate("/wishlist") },
     { icon: "bag-outline", label: "Your cart", onPress: () => router.navigate("/cart") },
+    { icon: "notifications-outline", label: unread > 0 ? `Order updates (${unread} new)` : "Order updates", onPress: () => router.push("/notifications") },
     { icon: "leaf-outline", label: "Gardener services", onPress: () => router.push("/gardener") },
     { icon: "briefcase-outline", label: "Wholesale", onPress: () => router.push("/wholesale") },
+    { icon: "chatbubble-ellipses-outline", label: "Contact us", onPress: () => router.push("/contact") },
+    ...HELP.map((page) => ({ icon: "book-outline" as const, label: page.label, onPress: () => void WebBrowser.openBrowserAsync(`${SITE}${page.path}`) })),
   ];
 
   return (
