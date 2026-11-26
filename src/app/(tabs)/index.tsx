@@ -1,22 +1,35 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/Button";
+import { ProductCard } from "@/components/ProductCard";
 import { Text } from "@/components/Text";
+import { useBestSellers, useCollections } from "@/lib/shopify/hooks";
 import { colors, radius, shadow } from "@/theme/tokens";
 
+const CARD_W = 220;
 const HERO = "https://fernwood-ruby.vercel.app/images/hero-plants.jpg";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const collections = useCollections();
+  const bestSellers = useBestSellers();
+  const refreshing = collections.isRefetching || bestSellers.isRefetching;
+  const refresh = () => {
+    void collections.refetch();
+    void bestSellers.refetch();
+  };
   return (
     <ScrollView
       style={styles.screen}
       contentContainerStyle={{ paddingBottom: 32 }}
       showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.forest} />}
     >
       <View style={styles.hero}>
         <Image source={{ uri: HERO }} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
@@ -32,7 +45,7 @@ export default function HomeScreen() {
             Let&apos;s go green!
           </Text>
           <View style={{ marginTop: 22, alignSelf: "flex-start" }}>
-            <Button label="Shop indoor plants" variant="light" />
+            <Button label="Shop indoor plants" variant="light" onPress={() => router.push("/shop")} />
           </View>
         </Animated.View>
       </View>
@@ -49,11 +62,69 @@ export default function HomeScreen() {
           <Button label="Find my plant" />
         </View>
       </Animated.View>
+
+      {collections.data && collections.data.length > 0 ? (
+        <View style={{ marginTop: 8 }}>
+          <Text variant="title" style={styles.sectionTitle}>
+            Shop house plants
+          </Text>
+          <FlatList
+            horizontal
+            data={collections.data}
+            keyExtractor={(item) => item.slug}
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={CARD_W + 14}
+            decelerationRate="fast"
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 14 }}
+            renderItem={({ item }) => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={item.name}
+                onPress={() => router.push("/shop")}
+                style={[styles.collection, { width: CARD_W }]}
+              >
+                <Image source={{ uri: item.image }} style={StyleSheet.absoluteFill} contentFit="cover" transition={250} />
+                <LinearGradient colors={["transparent", "rgba(26,44,22,0.8)"]} style={StyleSheet.absoluteFill} />
+                <View style={{ padding: 14 }}>
+                  <Text variant="title" style={{ color: colors.cream, fontSize: 20 }}>
+                    {item.name}
+                  </Text>
+                  <Text variant="small" style={{ color: colors.cream, opacity: 0.85 }}>
+                    {item.tagline}
+                  </Text>
+                </View>
+              </Pressable>
+            )}
+          />
+        </View>
+      ) : null}
+
+      {bestSellers.data && bestSellers.data.length > 0 ? (
+        <View style={{ marginTop: 28 }}>
+          <Text variant="eyebrow" style={styles.sectionEyebrow}>
+            Loved by plant parents
+          </Text>
+          <Text variant="title" style={styles.sectionTitle}>
+            Best sellers this season
+          </Text>
+          <FlatList
+            horizontal
+            data={bestSellers.data}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 14, paddingBottom: 8 }}
+            renderItem={({ item }) => <ProductCard product={item} width={CARD_W} />}
+          />
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  sectionEyebrow: { paddingHorizontal: 20 },
+  sectionTitle: { paddingHorizontal: 20, marginBottom: 14 },
+  collection: { height: 280, borderRadius: radius.lg, overflow: "hidden", justifyContent: "flex-end", backgroundColor: colors.sand },
   screen: { flex: 1, backgroundColor: colors.cream },
   hero: { height: 460, justifyContent: "flex-end", overflow: "hidden", borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl },
   heroText: { padding: 24, paddingBottom: 36 },

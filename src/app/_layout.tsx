@@ -7,6 +7,7 @@ import {
   WorkSans_500Medium,
   WorkSans_600SemiBold,
 } from "@expo-google-fonts/work-sans";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -17,6 +18,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { colors } from "@/theme/tokens";
 
 void SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } });
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -35,6 +38,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.cream }}>
+      <QueryClientProvider client={queryClient}>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -44,7 +48,9 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="product/[handle]" />
       </Stack>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }
