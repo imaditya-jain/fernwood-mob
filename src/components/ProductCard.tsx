@@ -7,6 +7,7 @@ import { Text } from "@/components/Text";
 import { WishlistHeart } from "@/components/WishlistHeart";
 import { useCart } from "@/features/cart/CartProvider";
 import { formatPrice } from "@/lib/format";
+import { isGift } from "@/lib/gift";
 import type { Product } from "@/lib/types";
 import { colors, radius, shadow } from "@/theme/tokens";
 
@@ -37,7 +38,7 @@ export function ProductCard({ product, width }: { product: Product; width?: numb
               </Text>
             </View>
           ) : null}
-          {product.inStock && product.variantId ? (
+          {product.inStock && product.variantId && !isGift(product) ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Add to cart: ${product.name}`}

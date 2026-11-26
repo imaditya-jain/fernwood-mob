@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { occasionsFromTags } from "@/lib/gift";
 import type { Collection, Product, ProductBadge } from "@/lib/types";
 
 import { storefrontQuery } from "./client";
@@ -98,6 +99,7 @@ function toProduct(node: z.infer<typeof productNode>): Product {
   const price = Number(node.priceRange.minVariantPrice.amount);
   const compare = Number(node.compareAtPriceRange.minVariantPrice.amount);
   const variantId = node.variants.nodes[0]?.id;
+  const occasions = occasionsFromTags(node.tags);
   const badge = BADGES.find((candidate) => node.tags.includes(candidate));
   return {
     id: node.id,
@@ -113,6 +115,7 @@ function toProduct(node: z.infer<typeof productNode>): Product {
     inStock: node.availableForSale,
     ...(variantId ? { variantId } : {}),
     collectionSlugs: node.collections.nodes.filter((c) => c.tagline?.value).map((c) => c.handle),
+    ...(occasions.length > 0 ? { occasions } : {}),
   };
 }
 

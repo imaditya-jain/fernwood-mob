@@ -124,6 +124,11 @@ export default function HomeScreen() {
           <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Plant Doctor</Text>
           <Text variant="small" style={{ color: colors.cream, opacity: 0.8, marginTop: 4 }}>Photograph a plant and get a care plan.</Text>
         </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => router.push("/gifts")} style={[styles.service, { backgroundColor: colors.clay }]}>
+          <Text variant="eyebrow" style={{ color: colors.cream }}>Nagpur</Text>
+          <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Gifts & bouquets</Text>
+          <Text variant="small" style={{ color: colors.cream, opacity: 0.9, marginTop: 4 }}>Fresh flowers delivered on the day you choose.</Text>
+        </Pressable>
         <Pressable accessibilityRole="button" onPress={() => router.push("/gardener")} style={[styles.service, { backgroundColor: colors.forest }]}>
           <Text variant="eyebrow" style={{ color: colors.sage }}>Services</Text>
           <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Gardener visits</Text>

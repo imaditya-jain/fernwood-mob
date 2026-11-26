@@ -87,6 +87,7 @@ export default function RootLayout() {
         <Stack.Screen name="plant-finder" />
         <Stack.Screen name="doctor" />
         <Stack.Screen name="gardener" />
+        <Stack.Screen name="gifts" />
         <Stack.Screen name="wholesale" />
         <Stack.Screen name="contact" />
         <Stack.Screen name="notifications" />

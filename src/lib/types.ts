@@ -23,4 +23,6 @@ export type Product = {
   inStock: boolean;
   variantId?: string;
   collectionSlugs: string[];
+  /** Occasions this product suits (from `occasion-*` tags). */
+  occasions?: string[];
 };

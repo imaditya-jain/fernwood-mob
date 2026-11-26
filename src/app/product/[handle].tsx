@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -10,6 +11,9 @@ import { Button } from "@/components/Button";
 import { ErrorState, Loading } from "@/components/QueryState";
 import { Text } from "@/components/Text";
 import { WishlistHeart } from "@/components/WishlistHeart";
+import { GiftFields } from "@/features/gifts/GiftFields";
+import { useGiftForm } from "@/features/gifts/useGiftForm";
+import { isBouquet, isGift } from "@/lib/gift";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/features/cart/CartProvider";
 import { useProduct } from "@/lib/shopify/hooks";
@@ -22,6 +26,9 @@ export default function ProductScreen() {
   const { data: product, isPending, isError, refetch } = useProduct(handle);
   const { add, busy, error } = useCart();
   const [failed, setFailed] = useState(false);
+  const gift = isGift(product ?? { category: "" });
+  const bouquet = isBouquet(product ?? { category: "" });
+  const giftForm = useGiftForm(bouquet);
 
   if (isPending) return <Loading />;
   if (isError) return <ErrorState onRetry={() => void refetch()} />;
@@ -42,7 +49,7 @@ export default function ProductScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView bottomOffset={120} contentContainerStyle={{ paddingBottom: 160 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View>
           <Image
             source={{ uri: product.image }}
@@ -88,8 +95,9 @@ export default function ProductScreen() {
               </View>
             ))}
           </View>
+          {gift ? <GiftFields form={giftForm} bouquet={bouquet} /> : null}
         </Animated.View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <View style={[styles.bar, { paddingBottom: insets.bottom + 12 }]}>
         {failed && error ? (
           <Text accessibilityRole="alert" variant="small" style={{ color: colors.danger, marginBottom: 8 }}>
@@ -102,7 +110,9 @@ export default function ProductScreen() {
           loading={busy}
           onPress={async () => {
             if (!product.variantId) return;
-            const added = await add(product.variantId);
+            const attributes = gift ? giftForm.validate() : undefined;
+            if (gift && !attributes) return;
+            const added = await add(product.variantId, attributes ? { attributes } : undefined);
             setFailed(!added);
             if (added) router.navigate("/cart");
           }}

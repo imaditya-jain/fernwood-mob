@@ -72,6 +72,7 @@ export default function AccountScreen() {
     { icon: "bag-outline", label: "Your cart", onPress: () => router.navigate("/cart") },
     { icon: "notifications-outline", label: unread > 0 ? `Order updates (${unread} new)` : "Order updates", onPress: () => router.push("/notifications") },
     { icon: "medkit-outline", label: "Plant Doctor", onPress: () => router.push("/doctor") },
+    { icon: "gift-outline", label: "Gifts & bouquets", onPress: () => router.push("/gifts") },
     { icon: "leaf-outline", label: "Gardener services", onPress: () => router.push("/gardener") },
     { icon: "briefcase-outline", label: "Wholesale", onPress: () => router.push("/wholesale") },
     { icon: "chatbubble-ellipses-outline", label: "Contact us", onPress: () => router.push("/contact") },
