@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { type Cart, MAX_CART_LINES } from "@/lib/cart";
-import { addLine, CartError, createCart, fetchCart, removeLine, setLineQuantity } from "@/lib/shopify/cart";
+import { addLine, CartError, createCart, type LineExtras, fetchCart, removeLine, setLineQuantity } from "@/lib/shopify/cart";
 
 const KEY = "fw_cart_id";
 
@@ -13,7 +13,7 @@ type CartState = {
   busy: boolean;
   /** Plain message for the last failure, cleared by the next action. */
   error: string | null;
-  add: (variantId: string) => Promise<boolean>;
+  add: (variantId: string, extras?: LineExtras) => Promise<boolean>;
   setQuantity: (lineId: string, quantity: number) => Promise<void>;
   remove: (lineId: string) => Promise<void>;
   clearError: () => void;
@@ -100,14 +100,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const add = useCallback(
-    async (variantId: string) => {
+    async (variantId: string, extras?: LineExtras) => {
       if ((cartRef.current?.lines.length ?? 0) >= MAX_CART_LINES) {
         setError("Your cart is full. Check out first, then add more.");
         return false;
       }
       const ok = await run(
-        (current) => (current ? addLine(current.id, variantId) : createCart(variantId)),
-        () => createCart(variantId),
+        (current) => (current ? addLine(current.id, variantId, 1, extras) : createCart(variantId, 1, extras)),
+        () => createCart(variantId, 1, extras),
       );
       if (ok) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       return ok;

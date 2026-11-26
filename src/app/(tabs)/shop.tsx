@@ -49,7 +49,7 @@ export default function ShopScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0, marginTop: 12 }}
+          style={{ flexGrow: 0, flexShrink: 0, height: 44, marginTop: 12 }}
           contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
         >
           {[null, ...categories].map((name) => {

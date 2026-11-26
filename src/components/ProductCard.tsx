@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { Text } from "@/components/Text";
@@ -12,12 +12,14 @@ import { colors, radius, shadow } from "@/theme/tokens";
 
 export function ProductCard({ product, width }: { product: Product; width?: number }) {
   const { add, busy } = useCart();
+  const router = useRouter();
   return (
-    <Link href={{ pathname: "/product/[handle]", params: { handle: product.slug } }} asChild>
+    <View style={width ? { width } : { flex: 1 }}>
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={`View ${product.name}`}
-        style={({ pressed }) => [styles.card, width ? { width } : { flex: 1 }, pressed && { opacity: 0.9 }]}
+        onPress={() => router.push({ pathname: "/product/[handle]", params: { handle: product.slug } })}
+        style={styles.card}
       >
         <View>
           <Image
@@ -73,7 +75,7 @@ export function ProductCard({ product, width }: { product: Product; width?: numb
           </View>
         </View>
       </Pressable>
-    </Link>
+    </View>
   );
 }
 

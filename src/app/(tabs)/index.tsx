@@ -117,11 +117,26 @@ export default function HomeScreen() {
           />
         </View>
       ) : null}
+
+      <Animated.View entering={FadeInDown.delay(250).duration(600)} style={styles.services}>
+        <Pressable accessibilityRole="button" onPress={() => router.push("/gardener")} style={[styles.service, { backgroundColor: colors.forest }]}>
+          <Text variant="eyebrow" style={{ color: colors.sage }}>Services</Text>
+          <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Gardener visits</Text>
+          <Text variant="small" style={{ color: colors.cream, opacity: 0.8, marginTop: 4 }}>One-time or monthly, fortnightly and weekly plans.</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={() => router.push("/wholesale")} style={[styles.service, { backgroundColor: colors.sand }]}>
+          <Text variant="eyebrow">Trade</Text>
+          <Text variant="title" style={{ marginTop: 4 }}>Wholesale</Text>
+          <Text variant="small" style={{ marginTop: 4 }}>Apply for a trade account for your business.</Text>
+        </Pressable>
+      </Animated.View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  services: { paddingHorizontal: 20, gap: 14, marginTop: 28 },
+  service: { borderRadius: radius.xl, padding: 20, ...shadow.card },
   sectionEyebrow: { paddingHorizontal: 20 },
   sectionTitle: { paddingHorizontal: 20, marginBottom: 14 },
   collection: { height: 280, borderRadius: radius.lg, overflow: "hidden", justifyContent: "flex-end", backgroundColor: colors.sand },

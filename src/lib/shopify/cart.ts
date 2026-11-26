@@ -31,7 +31,8 @@ const CART_FIELDS = /* GraphQL */ `
 const USER_ERRORS = "userErrors { code message }";
 
 const CART_QUERY = `${CART_FIELDS} query Cart($id: ID!) { cart(id: $id) { ...CartFields } }`;
-const CART_CREATE = `${CART_FIELDS} mutation CartCreate($lines: [CartLineInput!]!) { cartCreate(input: { lines: $lines }) { cart { ...CartFields } ${USER_ERRORS} } }`;
+const CART_CREATE = `${CART_FIELDS} mutation CartCreate($lines: [CartLineInput!]!, $buyerIdentity: CartBuyerIdentityInput) { cartCreate(input: { lines: $lines, buyerIdentity: $buyerIdentity }) { cart { ...CartFields } ${USER_ERRORS} } }`;
+const CART_BUYER = `${CART_FIELDS} mutation CartBuyer($cartId: ID!, $email: String) { cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: { email: $email }) { cart { ...CartFields } ${USER_ERRORS} } }`;
 const CART_LINES_ADD = `${CART_FIELDS} mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) { cartLinesAdd(cartId: $cartId, lines: $lines) { cart { ...CartFields } ${USER_ERRORS} } }`;
 const CART_LINES_UPDATE = `${CART_FIELDS} mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) { cartLinesUpdate(cartId: $cartId, lines: $lines) { cart { ...CartFields } ${USER_ERRORS} } }`;
 const CART_LINES_REMOVE = `${CART_FIELDS} mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) { cartLinesRemove(cartId: $cartId, lineIds: $lineIds) { cart { ...CartFields } ${USER_ERRORS} } }`;
@@ -126,15 +127,39 @@ export async function fetchCart(id: string): Promise<Cart | null> {
   return data.cart ? map(data.cart) : null;
 }
 
-export const createCart = (variantId: string, quantity = 1) => {
-  assertGid(variantId);
-  return mutate(CART_CREATE, { lines: [{ merchandiseId: variantId, quantity: clamp(quantity) }] }, "cartCreate");
+/** Optional extras for a line: a subscription plan and the booking details shown on the order line. */
+export type LineExtras = {
+  sellingPlanId?: string;
+  attributes?: { key: string; value: string }[];
+  /** Pre-fills checkout. Only used for bookings, where the shopper typed it. */
+  buyerEmail?: string;
 };
 
-export const addLine = (cartId: string, variantId: string, quantity = 1) => {
-  assertGid(cartId);
+const lineInput = (variantId: string, quantity: number, extras?: LineExtras) => {
   assertGid(variantId);
-  return mutate(CART_LINES_ADD, { cartId, lines: [{ merchandiseId: variantId, quantity: clamp(quantity) }] }, "cartLinesAdd");
+  if (extras?.sellingPlanId) assertGid(extras.sellingPlanId);
+  return {
+    merchandiseId: variantId,
+    quantity: clamp(quantity),
+    ...(extras?.sellingPlanId ? { sellingPlanId: extras.sellingPlanId } : {}),
+    ...(extras?.attributes?.length ? { attributes: extras.attributes } : {}),
+  };
+};
+
+export const createCart = (variantId: string, quantity = 1, extras?: LineExtras) =>
+  mutate(
+    CART_CREATE,
+    {
+      lines: [lineInput(variantId, quantity, extras)],
+      ...(extras?.buyerEmail ? { buyerIdentity: { email: extras.buyerEmail } } : {}),
+    },
+    "cartCreate",
+  );
+
+export const addLine = async (cartId: string, variantId: string, quantity = 1, extras?: LineExtras) => {
+  assertGid(cartId);
+  const cart = await mutate(CART_LINES_ADD, { cartId, lines: [lineInput(variantId, quantity, extras)] }, "cartLinesAdd");
+  return extras?.buyerEmail ? mutate(CART_BUYER, { cartId, email: extras.buyerEmail }, "cartBuyerIdentityUpdate") : cart;
 };
 
 export const setLineQuantity = (cartId: string, lineId: string, quantity: number) => {

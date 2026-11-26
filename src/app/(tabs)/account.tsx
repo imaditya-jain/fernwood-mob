@@ -56,6 +56,8 @@ export default function AccountScreen() {
     { icon: "receipt-outline", label: "Your orders", onPress: () => router.push("/orders") },
     { icon: "heart-outline", label: "Your wishlist", onPress: () => router.navigate("/wishlist") },
     { icon: "bag-outline", label: "Your cart", onPress: () => router.navigate("/cart") },
+    { icon: "leaf-outline", label: "Gardener services", onPress: () => router.push("/gardener") },
+    { icon: "briefcase-outline", label: "Wholesale", onPress: () => router.push("/wholesale") },
   ];
 
   return (
