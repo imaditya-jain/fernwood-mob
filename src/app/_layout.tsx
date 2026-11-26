@@ -15,7 +15,9 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { AuthProvider } from "@/features/auth/AuthProvider";
 import { CartProvider } from "@/features/cart/CartProvider";
+import { WishlistProvider } from "@/features/wishlist/WishlistProvider";
 import { colors } from "@/theme/tokens";
 
 void SplashScreen.preventAutoHideAsync();
@@ -40,6 +42,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.cream }}>
       <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+      <WishlistProvider>
       <CartProvider>
       <StatusBar style="dark" />
       <Stack
@@ -51,8 +55,16 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="product/[handle]" />
+        <Stack.Screen name="orders/index" />
+        <Stack.Screen name="orders/[id]" />
+        <Stack.Screen name="auth/login" options={{ presentation: "modal" }} />
+        <Stack.Screen name="auth/verify" />
+        <Stack.Screen name="auth/register" />
+        <Stack.Screen name="auth/forgot-password" />
       </Stack>
       </CartProvider>
+      </WishlistProvider>
+      </AuthProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

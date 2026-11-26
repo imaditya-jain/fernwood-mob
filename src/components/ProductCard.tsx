@@ -4,6 +4,7 @@ import { Link } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { Text } from "@/components/Text";
+import { WishlistHeart } from "@/components/WishlistHeart";
 import { useCart } from "@/features/cart/CartProvider";
 import { formatPrice } from "@/lib/format";
 import type { Product } from "@/lib/types";
@@ -26,6 +27,7 @@ export function ProductCard({ product, width }: { product: Product; width?: numb
             transition={250}
             recyclingKey={product.id}
           />
+          <WishlistHeart handle={product.slug} name={product.name} size={36} style={{ position: "absolute", right: 10, top: 10 }} />
           {product.badge ? (
             <View style={[styles.badge, product.badge === "Sale" && { backgroundColor: colors.clay }]}>
               <Text variant="small" style={styles.badgeText}>
@@ -104,8 +106,8 @@ const styles = StyleSheet.create({
   },
   soldOut: {
     position: "absolute",
-    right: 10,
-    top: 10,
+    left: 10,
+    bottom: 10,
     backgroundColor: "rgba(37,50,30,0.75)",
     borderRadius: radius.pill,
     paddingHorizontal: 10,

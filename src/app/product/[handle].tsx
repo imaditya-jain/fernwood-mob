@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/Button";
 import { ErrorState, Loading } from "@/components/QueryState";
 import { Text } from "@/components/Text";
+import { WishlistHeart } from "@/components/WishlistHeart";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/features/cart/CartProvider";
 import { useProduct } from "@/lib/shopify/hooks";
@@ -49,6 +50,7 @@ export default function ProductScreen() {
             contentFit="cover"
             transition={300}
           />
+          <WishlistHeart handle={product.slug} name={product.name} style={{ position: "absolute", right: 16, top: insets.top + 8 }} size={42} />
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
