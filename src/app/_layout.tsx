@@ -83,6 +83,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="product/[handle]" />
         <Stack.Screen name="plant-finder" />
+        <Stack.Screen name="doctor" />
         <Stack.Screen name="gardener" />
         <Stack.Screen name="wholesale" />
         <Stack.Screen name="contact" />

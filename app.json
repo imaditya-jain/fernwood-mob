@@ -47,6 +47,14 @@
             "image": "./assets/splash-icon.png"
           }
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Fernwood uses your photos so the Plant Doctor can look at your plant.",
+          "cameraPermission": "Fernwood uses the camera so you can photograph your plant for the Plant Doctor.",
+          "microphonePermission": false
+        }
       ]
     ],
     "scheme": "fernwood",

@@ -105,14 +105,17 @@ export function refreshAccessToken(): Promise<boolean> {
 /** Authenticated call: Bearer on every request; on 401 refresh once and retry. */
 export async function apiRequest<T>(
   path: string,
-  options: { method?: "GET" | "POST" | "PATCH" | "DELETE"; json?: unknown } = {},
+  options: { method?: "GET" | "POST" | "PATCH" | "DELETE"; json?: unknown; form?: FormData } = {},
 ): Promise<T> {
   const send = async () => {
     try {
+      // A multipart upload sets its own Content-Type (with the boundary), so only the app marker is sent then.
+      const base = options.form ? { "X-Fernwood-Client": "app" } : baseHeaders;
       return await fetch(`${BASE}${path}`, {
         method: options.method ?? "GET",
-        headers: { ...baseHeaders, ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
+        headers: { ...base, ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
         ...(options.json !== undefined ? { body: JSON.stringify(options.json) } : {}),
+        ...(options.form ? { body: options.form } : {}),
       });
     } catch {
       throw new ApiError(0, "network_error", "Network problem. Check your connection and try again.");

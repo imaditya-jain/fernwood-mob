@@ -119,6 +119,11 @@ export default function HomeScreen() {
       ) : null}
 
       <Animated.View entering={FadeInDown.delay(250).duration(600)} style={styles.services}>
+        <Pressable accessibilityRole="button" onPress={() => router.push("/doctor")} style={[styles.service, { backgroundColor: colors.forestDeep }]}>
+          <Text variant="eyebrow" style={{ color: colors.sage }}>New</Text>
+          <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Plant Doctor</Text>
+          <Text variant="small" style={{ color: colors.cream, opacity: 0.8, marginTop: 4 }}>Photograph a plant and get a care plan.</Text>
+        </Pressable>
         <Pressable accessibilityRole="button" onPress={() => router.push("/gardener")} style={[styles.service, { backgroundColor: colors.forest }]}>
           <Text variant="eyebrow" style={{ color: colors.sage }}>Services</Text>
           <Text variant="title" style={{ color: colors.cream, marginTop: 4 }}>Gardener visits</Text>
