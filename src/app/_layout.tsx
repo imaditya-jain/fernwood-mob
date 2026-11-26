@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
-import { GreenhouseIntro } from "@/features/intro/GreenhouseIntro";
+import { IntroGate } from "@/features/intro/IntroGate";
 import { prefetchStorefront } from "@/lib/shopify/prefetch";
 import { PushRegistration } from "@/features/push/PushRegistration";
 import { CartProvider } from "@/features/cart/CartProvider";
@@ -81,7 +81,7 @@ export default function RootLayout() {
       </CartProvider>
       </WishlistProvider>
       </AuthProvider>
-      {introDone ? null : <GreenhouseIntro onDone={() => setIntroDone(true)} />}
+      {introDone ? null : <IntroGate onDone={() => setIntroDone(true)} />}
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

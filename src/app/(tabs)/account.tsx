@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,6 +10,7 @@ import { Loading } from "@/components/QueryState";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import { Text } from "@/components/Text";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { INTRO_LABELS, type IntroStyle, readIntroStyle, saveIntroStyle } from "@/features/intro/preference";
 import { useUnreadCount } from "@/features/notifications/useUnreadCount";
 import { ApiError, apiRequest } from "@/lib/api";
 import { colors, radius, shadow } from "@/theme/tokens";
@@ -32,6 +33,10 @@ export default function AccountScreen() {
   const router = useRouter();
   const { status, user, logout, logoutEverywhere } = useAuth();
   const unread = useUnreadCount();
+  const [introStyle, setIntroStyle] = useState<IntroStyle>("mix");
+  useEffect(() => {
+    void readIntroStyle().then(setIntroStyle);
+  }, []);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -73,6 +78,20 @@ export default function AccountScreen() {
     { icon: "notifications-outline", label: unread > 0 ? `Order updates (${unread} new)` : "Order updates", onPress: () => router.push("/notifications") },
     { icon: "leaf-outline", label: "Gardener services", onPress: () => router.push("/gardener") },
     { icon: "briefcase-outline", label: "Wholesale", onPress: () => router.push("/wholesale") },
+    {
+      icon: "sparkles-outline",
+      label: `Welcome style: ${INTRO_LABELS[introStyle]}`,
+      onPress: () =>
+        Alert.alert("How should the app open?", "You will see it the next time you open the app.", [
+          ...(Object.keys(INTRO_LABELS) as IntroStyle[]).map((style) => ({
+            text: INTRO_LABELS[style],
+            onPress: () => {
+              setIntroStyle(style);
+              void saveIntroStyle(style);
+            },
+          })),
+        ], { cancelable: true }),
+    },
     { icon: "chatbubble-ellipses-outline", label: "Contact us", onPress: () => router.push("/contact") },
     ...HELP.map((page) => ({ icon: "book-outline" as const, label: page.label, onPress: () => void WebBrowser.openBrowserAsync(`${SITE}${page.path}`) })),
   ];
