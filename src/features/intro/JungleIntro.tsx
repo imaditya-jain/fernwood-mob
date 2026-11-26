@@ -17,81 +17,82 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Path } from "react-native-svg";
 
 import { Text } from "@/components/Text";
-import { broadPaths, frondPaths, type Leaf } from "@/features/intro/foliage";
 import { pickTip, timeOfDayGreeting } from "@/features/intro/greeting";
 import { colors } from "@/theme/tokens";
 
-const PHOTO = `${process.env.EXPO_PUBLIC_API_URL ?? ""}/images/hero-plants.jpg`;
+const PHOTO = `${process.env.EXPO_PUBLIC_API_URL ?? ""}/images/seasonal-greenhouse.jpg`;
 
-/** One side of the jungle. Mirrored for the other side, so the two never look copy-pasted: the right uses its own phases. */
-const LEAVES: Leaf[] = [
-  // Back layer: darker, slower, further away.
-  { kind: "frond", x: 0.05, y: 0.92, size: 360, rotate: 18, color: "#1f3a1c", vein: "#2c4f27", layer: "back", sway: 0.8, phase: 0.1 },
-  { kind: "broad", x: 0.12, y: 0.62, size: 300, rotate: 32, color: "#264420", vein: "#35592c", layer: "back", sway: 0.7, phase: 0.4 },
-  { kind: "frond", x: 0.02, y: 0.45, size: 320, rotate: 52, color: "#223f1e", vein: "#2f5029", layer: "back", sway: 0.9, phase: 0.7 },
-  // Front layer: lighter, larger, moves faster as it parts.
-  { kind: "broad", x: 0.0, y: 1.02, size: 420, rotate: 14, color: colors.forest, vein: colors.moss, layer: "front", sway: 1, phase: 0.2 },
-  { kind: "frond", x: 0.1, y: 1.0, size: 400, rotate: 36, color: colors.moss, vein: colors.sage, layer: "front", sway: 1.2, phase: 0.55 },
-  { kind: "broad", x: 0.0, y: 0.7, size: 340, rotate: 62, color: "#3b5a30", vein: "#5d7a4c", layer: "front", sway: 1.1, phase: 0.85 },
-];
+type Plant = {
+  source: number;
+  /** Image proportions (height / width), so layout never has to wait for the picture to load. */
+  aspect: number;
+  /** Offset from this side's edge and from the bottom, as fractions of the screen. Negative hangs off-screen. */
+  x: number;
+  bottom: number;
+  /** Width as a fraction of the screen width. */
+  size: number;
+  rotate: number;
+  mirror?: boolean;
+  /** How far this plant sways, so the group never moves in unison. */
+  sway: number;
+  phase: number;
+};
 
-function LeafShape({ leaf, mirror, sway, width, height }: { leaf: Leaf; mirror: boolean; sway: SharedValue<number>; width: number; height: number }) {
-  const shape = useMemo(
-    () => (leaf.kind === "frond" ? { frond: frondPaths(leaf.size, 14, leaf.size * 0.34, leaf.size * 0.05) } : { broad: broadPaths(leaf.size) }),
-    [leaf],
-  );
-  const dir = mirror ? -1 : 1;
+/** Real plant photographs (cut out from the shop's own product pictures), arranged in two depth layers per side. */
+const SIDES: Record<"left" | "right", Record<"back" | "front", Plant[]>> = {
+  left: {
+    back: [
+      { source: require("../../../assets/foliage/calathea-back.webp"), aspect: 1.0, x: -0.14, bottom: 0.3, size: 0.66, rotate: 10, sway: 0.8, phase: 0.1 },
+      { source: require("../../../assets/foliage/zz-back.webp"), aspect: 1.15, x: 0.02, bottom: 0.56, size: 0.5, rotate: 24, sway: 0.9, phase: 0.5 },
+    ],
+    front: [
+      { source: require("../../../assets/foliage/monstera.webp"), aspect: 0.96, x: -0.24, bottom: -0.1, size: 1.0, rotate: 6, sway: 1, phase: 0.2 },
+      { source: require("../../../assets/foliage/bird.webp"), aspect: 1.15, x: -0.1, bottom: 0.26, size: 0.66, rotate: 20, sway: 1.2, phase: 0.7 },
+    ],
+  },
+  right: {
+    back: [{ source: require("../../../assets/foliage/peace-back.webp"), aspect: 0.78, x: -0.1, bottom: 0.4, size: 0.62, rotate: -12, mirror: true, sway: 0.8, phase: 0.3 }],
+    front: [
+      { source: require("../../../assets/foliage/fiddle.webp"), aspect: 1.31, x: -0.2, bottom: -0.1, size: 0.78, rotate: -8, mirror: true, sway: 1, phase: 0.6 },
+      { source: require("../../../assets/foliage/fern.webp"), aspect: 0.97, x: -0.12, bottom: 0.08, size: 0.72, rotate: -26, mirror: true, sway: 1.2, phase: 0.1 },
+    ],
+  },
+};
+
+function PlantImage({ plant, side, sway, width, height }: { plant: Plant; side: "left" | "right"; sway: SharedValue<number>; width: number; height: number }) {
+  const w = plant.size * width;
+  const h = w * plant.aspect;
   const style = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${dir * leaf.rotate + Math.sin((sway.value + leaf.phase) * 6.283) * 2.4 * leaf.sway}deg` }],
+    transform: [
+      { rotate: `${plant.rotate + Math.sin((sway.value + plant.phase) * 6.283) * 2.2 * plant.sway}deg` },
+      { scale: 1 + Math.sin((sway.value + plant.phase) * 6.283) * 0.012 * plant.sway },
+    ],
   }));
-  const pad = leaf.size * 0.6;
-  const box = leaf.size + pad * 2;
   return (
     <Animated.View
       style={[
-        {
-          position: "absolute",
-          left: (mirror ? 1 - leaf.x : leaf.x) * width - box / 2,
-          top: leaf.y * height - box + pad,
-          width: box,
-          height: box,
-          transformOrigin: "50% 100%",
-        },
+        { position: "absolute", width: w, height: h, bottom: plant.bottom * height, [side]: plant.x * width, transformOrigin: "50% 100%" },
         style,
       ]}
     >
-      <Svg width={box} height={box} viewBox={`${-box / 2} ${-box + pad} ${box} ${box}`}>
-        {shape.frond ? (
-          <>
-            <Path d={shape.frond.blades} fill={leaf.color} />
-            <Path d={shape.frond.rib} stroke={leaf.vein} strokeWidth={3} strokeLinecap="round" />
-          </>
-        ) : null}
-        {shape.broad ? (
-          <>
-            <Path d={shape.broad.body} fill={leaf.color} />
-            <Path d={shape.broad.veins} stroke={leaf.vein} strokeWidth={2} fill="none" strokeLinecap="round" />
-          </>
-        ) : null}
-      </Svg>
+      <Image source={plant.source} style={{ width: w, height: h, transform: [{ scaleX: plant.mirror ? -1 : 1 }] }} contentFit="contain" />
     </Animated.View>
   );
 }
 
 function Cluster({ side, layer, open, sway, width, height }: { side: "left" | "right"; layer: "back" | "front"; open: SharedValue<number>; sway: SharedValue<number>; width: number; height: number }) {
   const dir = side === "left" ? -1 : 1;
-  const speed = layer === "front" ? 1 : 0.62;
+  const speed = layer === "front" ? 1 : 0.6;
   const style = useAnimatedStyle(() => ({
-    opacity: interpolate(open.value, [0, 0.75, 1], [1, 1, 0]),
-    transform: [{ translateX: dir * open.value * width * 0.85 * speed }, { rotate: `${dir * open.value * 10 * speed}deg` }, { scale: 1 + open.value * 0.12 }],
+    opacity: interpolate(open.value, [0, 0.8, 1], [1, 1, 0]),
+    transform: [{ translateX: dir * open.value * width * 0.95 * speed }, { rotate: `${dir * open.value * 9 * speed}deg` }, { scale: 1 + open.value * 0.14 }],
   }));
   return (
     <Animated.View style={[StyleSheet.absoluteFill, style]} pointerEvents="none">
-      {LEAVES.filter((leaf) => leaf.layer === layer).map((leaf, index) => (
-        <LeafShape key={index} leaf={leaf} mirror={side === "right"} sway={sway} width={width} height={height} />
+      {SIDES[side][layer].map((plant, index) => (
+        <PlantImage key={index} plant={plant} side={side} sway={sway} width={width} height={height} />
       ))}
     </Animated.View>
   );
@@ -112,8 +113,8 @@ function Shaft({ left, tilt, delay, width, height }: { left: number; tilt: numbe
 }
 
 /**
- * Second welcome: walking into a lush greenhouse. A real photograph of the nursery slowly settles behind dense
- * fern and leaf layers swaying in warm light shafts; the name appears, then the foliage parts like a path
+ * Second welcome: walking into a lush greenhouse. A real photograph of the nursery slowly settles behind layers of
+ * real plant photographs (monstera, bird of paradise, fiddle-leaf fig, fern) swaying in warm light shafts; the name appears, then the foliage parts like a path
  * through the plants. Same rules as the other welcome: skippable, runs while the shop loads, calm with Reduce motion.
  */
 export function JungleIntro({ onDone }: { onDone: () => void }) {

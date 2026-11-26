@@ -13,6 +13,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
@@ -37,10 +38,18 @@ export default function RootLayout() {
   });
 
   const [introDone, setIntroDone] = useState(false);
+  const [introReady, setIntroReady] = useState(false);
 
   useEffect(() => {
-    if (loaded || error) void SplashScreen.hideAsync();
-  }, [loaded, error]);
+    // The launch screen stays up until the welcome itself is on screen, so the home page is never seen first.
+    if (introReady) {
+      void SplashScreen.hideAsync();
+      return undefined;
+    }
+    // Safety net: never leave the launch screen up if the welcome could not start.
+    const timer = setTimeout(() => void SplashScreen.hideAsync(), 6000);
+    return () => clearTimeout(timer);
+  }, [introReady]);
 
   // The welcome plays while the shop loads, so the home screen is ready the moment the doors open.
   useEffect(() => {
@@ -57,6 +66,11 @@ export default function RootLayout() {
       <CartProvider>
       <PushRegistration />
       <StatusBar style="dark" />
+      <View
+        style={{ flex: 1 }}
+        accessibilityElementsHidden={!introDone}
+        importantForAccessibility={introDone ? "auto" : "no-hide-descendants"}
+      >
       <Stack
         screenOptions={{
           headerShown: false,
@@ -78,10 +92,11 @@ export default function RootLayout() {
         <Stack.Screen name="auth/register" />
         <Stack.Screen name="auth/forgot-password" />
       </Stack>
+      </View>
       </CartProvider>
       </WishlistProvider>
       </AuthProvider>
-      {introDone ? null : <IntroGate onDone={() => setIntroDone(true)} />}
+      {introDone ? null : <IntroGate onReady={() => setIntroReady(true)} onDone={() => setIntroDone(true)} />}
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
