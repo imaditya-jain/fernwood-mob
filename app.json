@@ -25,7 +25,6 @@
       "expo-router",
       "expo-secure-store",
       "expo-font",
-      "expo-splash-screen",
       "expo-image",
       "expo-web-browser",
       "@react-native-community/datetimepicker",
@@ -35,12 +34,25 @@
           "color": "#314329",
           "defaultChannel": "orders"
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1a2c16",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 140,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#1a2c16",
+            "image": "./assets/splash-icon.png"
+          }
+        }
       ]
     ],
     "scheme": "fernwood",
     "experiments": {
       "typedRoutes": true
     },
-    "backgroundColor": "#faf3e5"
+    "backgroundColor": "#1a2c16"
   }
 }

@@ -25,6 +25,8 @@ import { WishlistProvider } from "@/features/wishlist/WishlistProvider";
 import { colors } from "@/theme/tokens";
 
 void SplashScreen.preventAutoHideAsync();
+// The launch screen melts into the welcome (same forest green) instead of cutting to it.
+SplashScreen.setOptions({ duration: 350, fade: true });
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } });
 
