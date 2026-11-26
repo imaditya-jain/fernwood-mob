@@ -12,10 +12,12 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
+import { GreenhouseIntro } from "@/features/intro/GreenhouseIntro";
+import { prefetchStorefront } from "@/lib/shopify/prefetch";
 import { PushRegistration } from "@/features/push/PushRegistration";
 import { CartProvider } from "@/features/cart/CartProvider";
 import { WishlistProvider } from "@/features/wishlist/WishlistProvider";
@@ -34,9 +36,16 @@ export default function RootLayout() {
     WorkSans_600SemiBold,
   });
 
+  const [introDone, setIntroDone] = useState(false);
+
   useEffect(() => {
     if (loaded || error) void SplashScreen.hideAsync();
   }, [loaded, error]);
+
+  // The welcome plays while the shop loads, so the home screen is ready the moment the doors open.
+  useEffect(() => {
+    void prefetchStorefront(queryClient);
+  }, []);
 
   if (!loaded && !error) return null;
 
@@ -72,6 +81,7 @@ export default function RootLayout() {
       </CartProvider>
       </WishlistProvider>
       </AuthProvider>
+      {introDone ? null : <GreenhouseIntro onDone={() => setIntroDone(true)} />}
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
