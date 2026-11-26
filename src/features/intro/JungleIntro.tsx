@@ -75,10 +75,10 @@ const WORLD: Record<Layer, Record<Side, Plant[]>> = {
   },
   near: {
     left: [
-      { source: require("../../../assets/foliage/monstera-near.webp"), aspect: 0.96, x: -0.5, bottom: -0.2, size: 1.25, rotate: 18, sway: 0.5, phase: 0.45 },
-      { source: require("../../../assets/foliage/bird-near.webp"), aspect: 1.15, x: -0.2, bottom: 0.78, size: 0.8, rotate: 168, sway: 0.5, phase: 0.9 },
+      { source: require("../../../assets/foliage/monstera-near.webp"), aspect: 0.96, x: -0.55, bottom: -0.32, size: 1.05, rotate: 14, sway: 0.5, phase: 0.45 },
+      { source: require("../../../assets/foliage/bird-near.webp"), aspect: 1.15, x: -0.42, bottom: 0.9, size: 0.7, rotate: 160, sway: 0.5, phase: 0.9 },
     ],
-    right: [{ source: require("../../../assets/foliage/fiddle-near.webp"), aspect: 1.31, x: -0.42, bottom: -0.18, size: 0.9, rotate: -20, mirror: true, sway: 0.5, phase: 0.15 }],
+    right: [{ source: require("../../../assets/foliage/fiddle-near.webp"), aspect: 1.31, x: -0.5, bottom: -0.3, size: 0.8, rotate: -18, mirror: true, sway: 0.5, phase: 0.15 }],
   },
 };
 
@@ -292,6 +292,12 @@ export function JungleIntro({ onReady, onDone }: { onReady: () => void; onDone: 
           <Dust key={spec.x} spec={spec} width={width} height={height} />
         ))}
 
+        {depth("front")}
+        <Mist top={0.7} delay={2200} width={width} height={height} />
+        {depth("near")}
+        {/* Soft shade at the edges, like looking through the greenhouse door. */}
+        <LinearGradient colors={["rgba(10,20,8,0.55)", "rgba(10,20,8,0)"]} start={{ x: 0, y: 0.5 }} end={{ x: 0.22, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
+        <LinearGradient colors={["rgba(10,20,8,0.55)", "rgba(10,20,8,0)"]} start={{ x: 1, y: 0.5 }} end={{ x: 0.78, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
         <Animated.View style={[styles.text, { top: height * 0.3 }, textBlock]} pointerEvents="none">
           <Animated.View style={[{ alignItems: "center" }, titleStyle]}>
             <Text variant="eyebrow" style={{ color: "#f1d9a6", letterSpacing: 4, ...legible }}>
@@ -311,12 +317,6 @@ export function JungleIntro({ onReady, onDone }: { onReady: () => void; onDone: 
           </Animated.View>
         </Animated.View>
 
-        {depth("front")}
-        <Mist top={0.7} delay={2200} width={width} height={height} />
-        {depth("near")}
-        {/* Soft shade at the edges, like looking through the greenhouse door. */}
-        <LinearGradient colors={["rgba(10,20,8,0.55)", "rgba(10,20,8,0)"]} start={{ x: 0, y: 0.5 }} end={{ x: 0.22, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
-        <LinearGradient colors={["rgba(10,20,8,0.55)", "rgba(10,20,8,0)"]} start={{ x: 1, y: 0.5 }} end={{ x: 0.78, y: 0.5 }} style={StyleSheet.absoluteFill} pointerEvents="none" />
       </Pressable>
     </Animated.View>
   );
