@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,33 +8,16 @@ import { Button } from "@/components/Button";
 import { ErrorState, Loading } from "@/components/QueryState";
 import { Text } from "@/components/Text";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { type NotificationItem as Item, useNotifications } from "@/features/notifications/useUnreadCount";
 import { apiRequest } from "@/lib/api";
 import { colors, radius, shadow } from "@/theme/tokens";
-
-type Item = { id: string; kind: string; title: string; body: string; link: string; createdAt: string; read: boolean };
-type Data = { unreadCount: number; items: Item[] };
-
-export const useUnreadCount = () => {
-  const { status } = useAuth();
-  return useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => apiRequest<Data>("/api/notifications?limit=20"),
-    enabled: status === "authenticated",
-    refetchInterval: 60_000,
-    select: (data) => data.unreadCount,
-  });
-};
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const client = useQueryClient();
   const { status } = useAuth();
-  const query = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => apiRequest<Data>("/api/notifications?limit=20"),
-    enabled: status === "authenticated",
-  });
+  const query = useNotifications();
   const markRead = useMutation({
     mutationFn: (body: { all: true } | { ids: string[] }) => apiRequest("/api/notifications/read", { method: "POST", json: body }),
     onSuccess: () => client.invalidateQueries({ queryKey: ["notifications"] }),

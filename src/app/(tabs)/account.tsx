@@ -9,8 +9,8 @@ import { Button } from "@/components/Button";
 import { Loading } from "@/components/QueryState";
 import { SignInPrompt } from "@/components/SignInPrompt";
 import { Text } from "@/components/Text";
-import { useUnreadCount } from "@/app/notifications";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useUnreadCount } from "@/features/notifications/useUnreadCount";
 import { ApiError, apiRequest } from "@/lib/api";
 import { colors, radius, shadow } from "@/theme/tokens";
 
@@ -31,7 +31,7 @@ export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { status, user, logout, logoutEverywhere } = useAuth();
-  const unread = useUnreadCount().data ?? 0;
+  const unread = useUnreadCount();
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
