@@ -14,6 +14,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/Button";
@@ -251,7 +252,7 @@ export default function DoctorScreen() {
         <Text variant="eyebrow" style={{ color: colors.sage }}>Plant Doctor</Text>
         <View style={{ width: 26 }} />
       </View>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 18 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView bottomOffset={96} contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 40, gap: 18 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {status === "loading" ? (
           <Loading />
         ) : status !== "authenticated" ? (
@@ -327,7 +328,7 @@ export default function DoctorScreen() {
             ) : null}
           </>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import type { ReactNode } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components/Text";
@@ -12,8 +13,13 @@ export function AuthFrame({ eyebrow, title, intro, children }: { eyebrow: string
   const insets = useSafeAreaInsets();
   const router = useRouter();
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.forestDeep }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+    <View style={{ flex: 1, backgroundColor: colors.forestDeep }}>
+      <KeyboardAwareScrollView
+        bottomOffset={24}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 24, paddingBottom: 36 }}>
           <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back" hitSlop={12}>
             <Ionicons name="chevron-back" size={26} color={colors.cream} />
@@ -43,7 +49,7 @@ export function AuthFrame({ eyebrow, title, intro, children }: { eyebrow: string
         >
           {children}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }

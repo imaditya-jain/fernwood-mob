@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { Platform, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import Animated, {
   FadeInDown,
   interpolate,
@@ -15,6 +15,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/Button";
@@ -166,7 +167,7 @@ export default function GardenerScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 120 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView bottomOffset={96} contentContainerStyle={{ paddingBottom: insets.bottom + 120 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={[styles.hero, { paddingTop: insets.top + 12 }]}>
           <Image source={{ uri: `${SITE}/images/promo-repotting.jpg` }} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
           <LinearGradient colors={["rgba(26,44,22,0.78)", "rgba(26,44,22,0.62)", "rgba(26,44,22,0.95)"]} style={StyleSheet.absoluteFill} />
@@ -302,7 +303,7 @@ export default function GardenerScreen() {
             </View>
           </Animated.View>
         )}
-      </ScrollView>
+      </KeyboardAwareScrollView>
       {service && chosen ? (
         <View style={[styles.bar, { paddingBottom: insets.bottom + 12 }]}>
           <View style={{ flex: 1 }}>

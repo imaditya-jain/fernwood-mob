@@ -15,6 +15,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { JungleIntro } from "@/features/intro/JungleIntro";
@@ -62,6 +63,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.cream }}>
+      <KeyboardProvider>
       <QueryClientProvider client={queryClient}>
       <AuthProvider>
       <WishlistProvider>
@@ -101,6 +103,7 @@ export default function RootLayout() {
       </AuthProvider>
       {introDone ? null : <JungleIntro onReady={() => setIntroReady(true)} onDone={() => setIntroDone(true)} />}
       </QueryClientProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }
