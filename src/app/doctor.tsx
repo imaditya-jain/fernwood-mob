@@ -45,6 +45,8 @@ const MESSAGES = ["Looking at the leaves…", "Checking colour and texture…", 
 const friendly = (error: unknown): string => {
   if (error instanceof ApiError) {
     if (error.status === 429) return "You've reached today's limit of plant checks. Please come back tomorrow.";
+    if (error.status === 404) return "The Plant Doctor isn't available on the shop yet. Please try again soon.";
+    if (error.status === 0) return "We couldn't reach the shop. Check your connection and try again.";
     return error.message;
   }
   return "Something went wrong. Check your connection and try again.";
@@ -241,7 +243,9 @@ export default function DoctorScreen() {
     void client.invalidateQueries({ queryKey: ["plant-doctor"] });
   };
 
-  const enabled = history.data?.enabled ?? true;
+  // A 404 means the shop has not been updated with the Plant Doctor yet: say so, instead of letting someone take a photo for nothing.
+  const missing = history.error instanceof ApiError && history.error.status === 404;
+  const enabled = !missing && (history.data?.enabled ?? true);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream }}>
