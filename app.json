@@ -28,7 +28,14 @@
       "expo-splash-screen",
       "expo-image",
       "expo-web-browser",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "color": "#314329",
+          "defaultChannel": "orders"
+        }
+      ]
     ],
     "scheme": "fernwood",
     "experiments": {

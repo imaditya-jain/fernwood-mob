@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import { unregisterPush } from "@/features/push/state";
 import {
   apiRequest,
   bindSignedOut,
@@ -111,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
+    await unregisterPush();
     const token = await readRefreshToken().catch(() => null);
     if (token) await publicRequest("/api/mobile/auth/logout", "POST", { refreshToken: token }).catch(() => undefined);
     await clearRefreshToken().catch(() => undefined);
@@ -118,6 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [drop]);
 
   const logoutEverywhere = useCallback(async () => {
+    await unregisterPush();
     await apiRequest("/api/auth/logout-all", { method: "POST" }).catch(() => undefined);
     await clearRefreshToken().catch(() => undefined);
     drop();

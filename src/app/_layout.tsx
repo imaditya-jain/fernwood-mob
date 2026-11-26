@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
+import { PushRegistration } from "@/features/push/PushRegistration";
 import { CartProvider } from "@/features/cart/CartProvider";
 import { WishlistProvider } from "@/features/wishlist/WishlistProvider";
 import { colors } from "@/theme/tokens";
@@ -45,6 +46,7 @@ export default function RootLayout() {
       <AuthProvider>
       <WishlistProvider>
       <CartProvider>
+      <PushRegistration />
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
