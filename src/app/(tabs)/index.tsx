@@ -131,14 +131,14 @@ export default function HomeScreen() {
           <LinearGradient colors={[colors.forestDeep, colors.forest]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
           <Ionicons name="leaf" size={180} color={colors.cream} style={styles.watermark} />
           <View style={styles.pill}>
-            <Text variant="eyebrow" style={{ color: colors.cream, fontSize: 10 }}>New · AI</Text>
+            <Text variant="eyebrow" style={{ color: colors.cream, fontSize: 10 }}>Coming soon</Text>
           </View>
           <Text variant="title" style={{ color: colors.cream, marginTop: 14 }}>Plant Doctor</Text>
           <Text variant="small" style={{ color: colors.cream, opacity: 0.82, marginTop: 6, maxWidth: "75%" }}>
-            Photograph a struggling plant and get a clear, step-by-step care plan.
+            Photograph a struggling plant and get a clear care plan. Launching soon.
           </Text>
           <View style={styles.cta}>
-            <Text variant="small" style={{ color: colors.forestDeep, fontFamily: fonts.bodySemibold }}>Check a plant</Text>
+            <Text variant="small" style={{ color: colors.forestDeep, fontFamily: fonts.bodySemibold }}>Learn more</Text>
             <Ionicons name="arrow-forward" size={15} color={colors.forestDeep} />
           </View>
         </Pressable>

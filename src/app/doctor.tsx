@@ -292,8 +292,8 @@ export default function DoctorScreen() {
           <SignInPrompt icon="medkit-outline" title="Sign in to check your plant" text="The Plant Doctor looks at your photo and builds a care plan. A free account keeps your checks together." />
         ) : !enabled ? (
           <View style={[styles.card, { alignItems: "center" }]}>
-            <Text variant="title">The Plant Doctor is almost ready</Text>
-            <Text variant="small" style={{ textAlign: "center", marginTop: 6 }}>We are putting the finishing touches on it. Please check back soon.</Text>
+            <Text variant="title">Plant Doctor is coming soon</Text>
+            <Text variant="small" style={{ textAlign: "center", marginTop: 6 }}>Soon you will be able to photograph a struggling plant and get a care plan. We will tell you when it is ready.</Text>
           </View>
         ) : result ? (
           <Result record={result} onAgain={reset} />
