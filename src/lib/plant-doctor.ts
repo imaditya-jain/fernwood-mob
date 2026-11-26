@@ -35,6 +35,12 @@ export type Finding = {
   likelyCauses: string[];
 };
 
+export type Research = {
+  tips: string[];
+  treatments: { name: string; about: string; safety: string }[];
+  sources: { title: string; url: string }[];
+};
+
 export type Diagnosis = {
   isPlant: boolean;
   /** When the photo cannot be judged, what would make a better one. */
@@ -48,6 +54,7 @@ export type Diagnosis = {
   /** Questions whose answers would sharpen the diagnosis. */
   questions: string[];
   whenToGetHelp: string | null;
+  research?: Research | null;
   /** Products from our own shop that fit the plan, with the reason for each. */
   products: { product: Product; reason: string }[];
 };

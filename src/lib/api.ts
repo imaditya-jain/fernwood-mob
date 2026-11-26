@@ -107,18 +107,30 @@ export async function apiRequest<T>(
   path: string,
   options: { method?: "GET" | "POST" | "PATCH" | "DELETE"; json?: unknown; form?: FormData } = {},
 ): Promise<T> {
+  const attempt = async () => {
+    // A multipart upload sets its own Content-Type (with the boundary), so only the app marker is sent then.
+    const base = options.form ? { "X-Fernwood-Client": "app" } : baseHeaders;
+    return fetch(`${BASE}${path}`, {
+      method: options.method ?? "GET",
+      headers: { ...base, ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
+      ...(options.json !== undefined ? { body: JSON.stringify(options.json) } : {}),
+      ...(options.form ? { body: options.form } : {}),
+    });
+  };
+  // Android sometimes drops the first request on a connection the server already closed. Reads and photo uploads
+  // (which the server limits per person anyway) are tried once more before a network problem is reported.
+  const retryable = (options.method ?? "GET") === "GET" || Boolean(options.form);
   const send = async () => {
     try {
-      // A multipart upload sets its own Content-Type (with the boundary), so only the app marker is sent then.
-      const base = options.form ? { "X-Fernwood-Client": "app" } : baseHeaders;
-      return await fetch(`${BASE}${path}`, {
-        method: options.method ?? "GET",
-        headers: { ...base, ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
-        ...(options.json !== undefined ? { body: JSON.stringify(options.json) } : {}),
-        ...(options.form ? { body: options.form } : {}),
-      });
+      return await attempt();
     } catch {
-      throw new ApiError(0, "network_error", "Network problem. Check your connection and try again.");
+      if (!retryable) throw new ApiError(0, "network_error", "Network problem. Check your connection and try again.");
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      try {
+        return await attempt();
+      } catch {
+        throw new ApiError(0, "network_error", "Network problem. Check your connection and try again.");
+      }
     }
   };
   if (!accessToken && !(await refreshAccessToken())) {

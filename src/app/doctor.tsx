@@ -141,6 +141,35 @@ function Result({ record, onAgain }: { record: DiagnosisRecord; onAgain: () => v
         </View>
       ) : null}
 
+      {d.research && (d.research.tips.length > 0 || d.research.treatments.length > 0) ? (
+        <View style={{ gap: 12 }}>
+          <Text variant="title">From the web</Text>
+          <Steps title="Tips for this problem" items={d.research.tips} />
+          {d.research.treatments.length > 0 ? (
+            <View style={styles.card}>
+              <Text variant="title" style={{ fontSize: 18 }}>Treatments gardeners use</Text>
+              {d.research.treatments.map((t) => (
+                <View key={t.name} style={{ marginTop: 10, gap: 2 }}>
+                  <Text variant="body" style={{ fontFamily: fonts.bodySemibold, color: colors.forest }}>{t.name}</Text>
+                  <Text variant="body" style={{ fontSize: 15, lineHeight: 22 }}>{t.about}</Text>
+                  <Text variant="small">{t.safety}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {d.research.sources.length > 0 ? (
+            <View style={{ gap: 4 }}>
+              <Text variant="small">Sources</Text>
+              {d.research.sources.map((source) => (
+                <Pressable key={source.url} accessibilityRole="link" onPress={() => void Linking.openURL(source.url)} hitSlop={6}>
+                  <Text variant="small" style={{ color: colors.forest, textDecorationLine: "underline" }}>{source.title}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
       {d.products.length > 0 ? (
         <View style={{ gap: 10 }}>
           <Text variant="title">From our shop, for this plan</Text>
