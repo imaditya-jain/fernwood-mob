@@ -17,7 +17,7 @@ import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/features/auth/AuthProvider";
-import { IntroGate } from "@/features/intro/IntroGate";
+import { JungleIntro } from "@/features/intro/JungleIntro";
 import { prefetchStorefront } from "@/lib/shopify/prefetch";
 import { PushRegistration } from "@/features/push/PushRegistration";
 import { CartProvider } from "@/features/cart/CartProvider";
@@ -98,7 +98,7 @@ export default function RootLayout() {
       </CartProvider>
       </WishlistProvider>
       </AuthProvider>
-      {introDone ? null : <IntroGate onReady={() => setIntroReady(true)} onDone={() => setIntroDone(true)} />}
+      {introDone ? null : <JungleIntro onReady={() => setIntroReady(true)} onDone={() => setIntroDone(true)} />}
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
